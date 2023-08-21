@@ -1,34 +1,23 @@
-package com.smartcode.notificator.model.dto;
+package com.smartcode.audit_trail.model.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class CreateNotificationDto {
+public class CreateActionDto {
 
-    @NotBlank
-    private String title;
-
-    @NotBlank
-    private String content;
-
-    private String description;
-
-    @NotNull
-    private LocalDateTime notificationDate;
-
-    @Email
-    @NotBlank
-    private String email;
-
-    @Positive
     private Integer userId;
+
+    private String actionType;
+
+    private String entityType;
+
+    private LocalDateTime actionDate;
 
 }

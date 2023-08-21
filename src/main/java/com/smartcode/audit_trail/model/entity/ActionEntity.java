@@ -1,18 +1,15 @@
 
-package com.smartcode.notificator.model.entity;
+package com.smartcode.audit_trail.model.entity;
 
-import lombok.AccessLevel;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.experimental.FieldDefaults;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,17 +20,17 @@ public class ActionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer Id;
+    private Integer Id;
 
     @Column(nullable = false)
-    String actionType;
+    private String actionType;
 
     @Column(nullable = false)
-    String entityType;
+    private String entityType;
 
     @Column(nullable = false)
-    LocalDateTime actionDate;
+    private LocalDateTime actionDate;
 
     @Column(nullable = false)
-    Integer userId;
+    private Integer userId;
 }
