@@ -6,9 +6,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
@@ -26,42 +24,35 @@ public class KafkaConsumerConfig {
     private String groupId;
 
     @Bean
-    public Map<String, Object> consumerConfigs() {
-        Map<String, Object> prop = new HashMap<>();
-        prop.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
-        prop.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        prop.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, "20971520");
-        prop.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, "20971520");
-        prop.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "10");
-        prop.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        prop.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
-        prop.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS,StringDeserializer.class);
-        prop.put(JsonDeserializer.KEY_DEFAULT_TYPE, "java.lang.String");
-        prop.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS,JsonDeserializer.class);
-        prop.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.smartcode.audit_trail.model.dto.CreateActionDto");
-        prop.put(JsonDeserializer.TRUSTED_PACKAGES, "com.smartcode");
-        prop.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        return prop;
-    }
-
-    @Bean
-    public ConsumerFactory<String, CreateActionDto> notificationConsumerFactory() {
-        return new DefaultKafkaConsumerFactory<>(consumerConfigs());
-//                new StringDeserializer(),
-//                new JsonDeserializer<>(CreateActionDto.class));
-    }
-
-    @Bean
-    @Primary
-    public KafkaListenerEndpointRegistry endpointRegistry() {
-        return new KafkaListenerEndpointRegistry();
-    }
-
-    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, CreateActionDto> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, CreateActionDto> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(notificationConsumerFactory());
-        factory.setBatchListener(true);
-        return factory;
+        var container = new ConcurrentKafkaListenerContainerFactory<String, CreateActionDto>();
+        container.setConsumerFactory(consumerFactory());
+        return container;
+    }
+
+    @Bean
+    public ConsumerFactory<String, CreateActionDto> consumerFactory() {
+        return new DefaultKafkaConsumerFactory<>(
+                getConsumerProps(),
+                new StringDeserializer(),
+                new JsonDeserializer<>(CreateActionDto.class));
+    }
+
+    private Map<String, Object> getConsumerProps() {
+        var props = new HashMap<String, Object>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, "true");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        props.put(JsonDeserializer.KEY_DEFAULT_TYPE, String.class);
+        props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, CreateActionDto.class);
+        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS,false);
+        props.put(JsonDeserializer.TYPE_MAPPINGS, "CreateActionDto:com.smartcode.audit_trail.model.dto.CreateActionDto");
+        props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class.getName());
+        props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+        return props;
     }
 }
